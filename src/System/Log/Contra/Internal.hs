@@ -64,6 +64,7 @@ logUnlessM :: Monad m => (a -> m Bool) -> Log m a -> Log m a
 logUnlessM predicate (Log l) =
   Log $ \msg -> predicate msg >>= \cond -> unless cond $ l msg
 
+-- | Throws away any logs
 nowhere :: (Applicative m) => Log m a
 nowhere = mempty
 
