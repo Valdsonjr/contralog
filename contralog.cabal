@@ -1,10 +1,11 @@
 cabal-version:      2.4
 name:               contralog
 version:            0.1.0.0
-synopsis:           Logging framework
+synopsis:           a simple logging library based on co-log
 
 -- A longer description of the package.
--- description:
+description: 
+    This highly experimental logging library is based on co-log's notion of contravariant logging
 homepage:
 
 -- A URL where users can report bugs.
@@ -17,7 +18,11 @@ maintainer:         valdsonfrancisco.jr@gmail.com
 -- A copyright notice.
 -- copyright:
 category:           System
-extra-source-files: CHANGELOG.md
+extra-doc-files: CHANGELOG.md
+
+source-repository head
+  type:     git
+  location: https://github.com/Valdsonjr/contralog
 
 common shared
     ghc-options:
@@ -47,7 +52,8 @@ library
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:
-        unordered-containers, mtl
+        mtl                  >= 2.2.2 && < 2.3,
+        unordered-containers >= 0.2.19 && < 0.3    
     hs-source-dirs:   src
 
 test-suite contralog-test
