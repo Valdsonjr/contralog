@@ -12,6 +12,7 @@ import System.Log.Contra
     logUnless,
     logWhen,
     nowhere,
+    trace,
   )
 import Test.Hspec (describe, hspec, it, shouldNotBe)
 import Text.Printf (printf)
@@ -30,7 +31,7 @@ main = hspec $ do
   describe "something-something" $
     it "works" $ do
       ref <- newIORef ""
-      Simple Trace "teste" `logTo` ioRefMessageLogger ref
+      trace Simple "teste" $ ioRefMessageLogger ref
       msg <- readIORef ref
       msg `shouldNotBe` ""
 
