@@ -6,16 +6,22 @@ import System.Log.Contra
   ( Log (Log),
     Severity (..),
     contramapM,
+    critical,
+    debug,
+    error,
     fallbackTo,
+    info,
     ioRef,
     logTo,
     logUnless,
     logWhen,
     nowhere,
     trace,
+    warn,
   )
-import Test.Hspec (describe, hspec, it, shouldNotBe)
+import Test.Hspec (describe, hspec, it, shouldStartWith)
 import Text.Printf (printf)
+import Prelude hiding (error)
 
 main :: IO ()
 main = hspec $ do
@@ -28,12 +34,37 @@ main = hspec $ do
   describe "Contra.logUnless" $
     it "filters out logs" $
       "test" `logTo` logUnless (const True) exceptionLogger
-  describe "something-something" $
-    it "works" $ do
+  describe "Severity" $ do
+    it "trace" $ do
       ref <- newIORef ""
       trace Simple "teste" $ ioRefMessageLogger ref
       msg <- readIORef ref
-      msg `shouldNotBe` ""
+      msg `shouldStartWith` "[Trace]"
+    it "debug" $ do
+      ref <- newIORef ""
+      debug Simple "teste" $ ioRefMessageLogger ref
+      msg <- readIORef ref
+      msg `shouldStartWith` "[Debug]"
+    it "info" $ do
+      ref <- newIORef ""
+      info Simple "teste" $ ioRefMessageLogger ref
+      msg <- readIORef ref
+      msg `shouldStartWith` "[Info]"
+    it "warn" $ do
+      ref <- newIORef ""
+      warn Simple "teste" $ ioRefMessageLogger ref
+      msg <- readIORef ref
+      msg `shouldStartWith` "[Warning]"
+    it "error" $ do
+      ref <- newIORef ""
+      error Simple "teste" $ ioRefMessageLogger ref
+      msg <- readIORef ref
+      msg `shouldStartWith` "[Error]"
+    it "critical" $ do
+      ref <- newIORef ""
+      critical Simple "teste" $ ioRefMessageLogger ref
+      msg <- readIORef ref
+      msg `shouldStartWith` "[Critical]"
 
 exceptionLogger :: Log IO a
 exceptionLogger = Log (const $ ioError $ userError "nope")
