@@ -12,30 +12,31 @@ data Severity
   deriving (Read, Eq, Ord, Show)
 
 withMinSeverity ::
-  (Applicative m) =>
+  Applicative m =>
   Severity ->
-  (a -> Severity) ->
-  Log m a ->
-  Log m a
-withMinSeverity severity getter = logWhen ((>= severity) . getter)
+  Log m (WithSeverity a) ->
+  Log m (WithSeverity a)
+withMinSeverity sev = logWhen ((>= sev) . severity)
 
-logSeverity :: Severity -> (Severity -> a -> b) -> a -> Log m b -> m ()
-logSeverity sev f a logger = f sev a `logTo` logger
+data WithSeverity a = WithSeverity {severity :: Severity, value :: a}
 
-trace :: (Severity -> a -> b) -> a -> Log m b -> m ()
+logSeverity :: Severity -> a -> Log m (WithSeverity a) -> m ()
+logSeverity sev a logger = WithSeverity sev a `logTo` logger
+
+trace :: a -> Log m (WithSeverity a) -> m ()
 trace = logSeverity Trace
 
-debug :: (Severity -> a -> b) -> a -> Log m b -> m ()
+debug :: a -> Log m (WithSeverity a) -> m ()
 debug = logSeverity Debug
 
-info :: (Severity -> a -> b) -> a -> Log m b -> m ()
+info :: a -> Log m (WithSeverity a) -> m ()
 info = logSeverity Info
 
-warn :: (Severity -> a -> b) -> a -> Log m b -> m ()
+warn :: a -> Log m (WithSeverity a) -> m ()
 warn = logSeverity Warning
 
-error :: (Severity -> a -> b) -> a -> Log m b -> m ()
+error :: a -> Log m (WithSeverity a) -> m ()
 error = logSeverity Error
 
-critical :: (Severity -> a -> b) -> a -> Log m b -> m ()
+critical :: a -> Log m (WithSeverity a) -> m ()
 critical = logSeverity Critical

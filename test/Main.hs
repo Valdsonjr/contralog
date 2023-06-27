@@ -4,7 +4,7 @@ import Control.Concurrent (myThreadId)
 import Data.IORef (IORef, newIORef, readIORef)
 import System.Log.Contra
   ( Log (Log),
-    Severity (..),
+    WithSeverity,
     contramapM,
     critical,
     debug,
@@ -16,7 +16,9 @@ import System.Log.Contra
     logUnless,
     logWhen,
     nowhere,
+    severity,
     trace,
+    value,
     warn,
   )
 import Test.Hspec (describe, hspec, it, shouldStartWith)
@@ -37,47 +39,47 @@ main = hspec $ do
   describe "Severity" $ do
     it "trace" $ do
       ref <- newIORef ""
-      trace Simple "teste" $ ioRefMessageLogger ref
+      trace "teste" $ ioRefMessageLogger ref
       msg <- readIORef ref
       msg `shouldStartWith` "[Trace]"
     it "debug" $ do
       ref <- newIORef ""
-      debug Simple "teste" $ ioRefMessageLogger ref
+      debug "teste" $ ioRefMessageLogger ref
       msg <- readIORef ref
       msg `shouldStartWith` "[Debug]"
     it "info" $ do
       ref <- newIORef ""
-      info Simple "teste" $ ioRefMessageLogger ref
+      info "teste" $ ioRefMessageLogger ref
       msg <- readIORef ref
       msg `shouldStartWith` "[Info]"
     it "warn" $ do
       ref <- newIORef ""
-      warn Simple "teste" $ ioRefMessageLogger ref
+      warn "teste" $ ioRefMessageLogger ref
       msg <- readIORef ref
       msg `shouldStartWith` "[Warning]"
     it "error" $ do
       ref <- newIORef ""
-      error Simple "teste" $ ioRefMessageLogger ref
+      error "teste" $ ioRefMessageLogger ref
       msg <- readIORef ref
       msg `shouldStartWith` "[Error]"
     it "critical" $ do
       ref <- newIORef ""
-      critical Simple "teste" $ ioRefMessageLogger ref
+      critical "teste" $ ioRefMessageLogger ref
       msg <- readIORef ref
       msg `shouldStartWith` "[Critical]"
 
 exceptionLogger :: Log IO a
 exceptionLogger = Log (const $ ioError $ userError "nope")
 
-data Message
-  = Simple Severity String
-  | Complex Severity Int Int Bool
-
-ioRefMessageLogger :: IORef String -> Log IO Message
+ioRefMessageLogger :: IORef String -> Log IO (WithSeverity String)
 ioRefMessageLogger = contramapM fmt . ioRef
   where
-    fmt (Simple sev msg) = do
+    fmt :: WithSeverity String -> IO String
+    fmt entry = do
       threadId <- myThreadId
-      pure $ printf "[%s] [%s] %s" (show sev) (show threadId) msg
-    fmt (Complex sev i1 i2 b) =
-      pure $ printf "[%s] %d %d %s" (show sev) i1 i2 (show b)
+      pure $
+        printf
+          "[%s] [%s] %s"
+          (show $ severity entry)
+          (show threadId)
+          (value entry)

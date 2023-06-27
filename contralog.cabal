@@ -45,11 +45,10 @@ library
     other-modules:
         System.Log.Contra.Internal,
         System.Log.Contra.Severity
-        -- System.Log.Contra.Message
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:
+    build-depends:    
     hs-source-dirs:   src
 
 test-suite contralog-test
