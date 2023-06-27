@@ -36,24 +36,19 @@ common shared
     build-depends:    base ^>=4.16.4.0
     default-language: Haskell2010
 
-
 library
     import:           shared
     exposed-modules:
-        System.Log.Contra,
-        System.Log.Contra.Class
+        System.Log.Contra
 
     -- Modules included in this library but not exported.
     other-modules:
         System.Log.Contra.Internal,
-        System.Log.Contra.Severity,
-        System.Log.Contra.Message
+        System.Log.Contra.Severity
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:
-        mtl                  >= 2.2.2 && < 2.3,
-        unordered-containers >= 0.2.19 && < 0.3    
+    build-depends:    
     hs-source-dirs:   src
 
 test-suite contralog-test

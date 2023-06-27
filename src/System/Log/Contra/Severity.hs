@@ -1,9 +1,6 @@
 module System.Log.Contra.Severity where
 
-import Data.Dynamic (Typeable)
-import System.Log.Contra.Internal (Log, logWhen)
-import System.Log.Contra.Message (Message, getValue, withCallStack, withValue, logMsg)
-import GHC.Stack (HasCallStack, callStack)
+import System.Log.Contra.Internal (Log, logTo, logWhen)
 
 data Severity
   = Trace
@@ -14,29 +11,32 @@ data Severity
   | Critical
   deriving (Read, Eq, Ord, Show)
 
-getSeverity :: Message -> Maybe Severity
-getSeverity = getValue "@severity"
+withMinSeverity ::
+  Applicative m =>
+  Severity ->
+  Log m (WithSeverity a) ->
+  Log m (WithSeverity a)
+withMinSeverity sev = logWhen ((>= sev) . severity)
 
-minSeverity :: (Applicative m) => Severity -> Log m Message -> Log m Message
-minSeverity severity = logWhen (maybe True (>= severity) . getSeverity)
+data WithSeverity a = WithSeverity {severity :: Severity, value :: a}
 
-withSeverity :: Severity -> Log m Message -> Log m Message
-withSeverity = withValue "@severity"
+logSeverity :: Severity -> a -> Log m (WithSeverity a) -> m ()
+logSeverity sev a logger = WithSeverity sev a `logTo` logger
 
-debug :: (Typeable a, HasCallStack) => Log m Message -> a -> m ()
-debug = logMsg . withCallStack callStack . withSeverity Debug
+trace :: a -> Log m (WithSeverity a) -> m ()
+trace = logSeverity Trace
 
-trace :: (Typeable a, HasCallStack) => Log m Message -> a -> m ()
-trace = logMsg . withCallStack callStack . withSeverity Trace
+debug :: a -> Log m (WithSeverity a) -> m ()
+debug = logSeverity Debug
 
-info :: (Typeable a, HasCallStack) => Log m Message -> a -> m ()
-info = logMsg . withCallStack callStack . withSeverity Info
+info :: a -> Log m (WithSeverity a) -> m ()
+info = logSeverity Info
 
-warn :: (Typeable a, HasCallStack) => Log m Message -> a -> m ()
-warn = logMsg . withCallStack callStack . withSeverity Warning
+warn :: a -> Log m (WithSeverity a) -> m ()
+warn = logSeverity Warning
 
-err :: (Typeable a, HasCallStack) => Log m Message -> a -> m ()
-err = logMsg . withCallStack callStack . withSeverity Error
+error :: a -> Log m (WithSeverity a) -> m ()
+error = logSeverity Error
 
-critical :: (Typeable a, HasCallStack) => Log m Message -> a -> m ()
-critical = logMsg . withCallStack callStack . withSeverity Critical
+critical :: a -> Log m (WithSeverity a) -> m ()
+critical = logSeverity Critical
